@@ -1,0 +1,47 @@
+body {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-family: Arial, sans-serif;
+    background-color: #d5f7ff;
+}
+  
+.container {
+  position: relative;
+  text-align: center;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+text{
+    font-size: 20px;
+    font-weight: bold;
+    pointer-events:none;
+}
+
+#chart{
+    position:relative;
+    width: 1000px;
+    height: 1000px;
+    top:0;
+    left:0;
+}
+
+#winnerText h1{
+    font-size: 45px;
+    padding-left: 15px;
+}
+
+#winnerText h1.win{
+    color: green;
+}
+
+#winnerText h1.lose{
+    color: red;
+}
+
+#infoText h1{
+    font-size: 30px;
+}

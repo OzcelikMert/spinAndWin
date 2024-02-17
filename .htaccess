@@ -1,0 +1,6 @@
+RewriteEngine on
+
+RewriteCond %{REQUEST_URI} !(\.png|\.jpg|\.gif|\.jpeg|\.bmp|\.css|\.js|\.woff|\.woff2|\.map|\.ico|\.map)$
+RewriteCond $1 !^(index\.php|robots\.txt|^api)
+
+RewriteRule ^([0-9a-zA-Z-_]+)? index.php

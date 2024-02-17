@@ -1,0 +1,11 @@
+canvas {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: calc(100% - 20px);
+    /* Reduce width to avoid scrollbars */
+    height: calc(100% - 20px);
+    /* Reduce height to avoid scrollbars */
+    pointer-events: none;
+    z-index: -2;
+}
