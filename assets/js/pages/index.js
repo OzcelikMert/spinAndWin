@@ -1,5 +1,5 @@
 document.addEventListener('DOMContentLoaded', () => {
-    let padding = { top: 20, right: 40, bottom: 0, left: 0 },
+    let padding = { top: 40, right: 0, bottom: 0, left: 20 },
         width = 1000 - padding.left - padding.right,
         height = 1000 - padding.top - padding.bottom,
         radius = Math.min(width, height) / 2,
@@ -117,9 +117,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
         $svg.append("g")
-            .attr("transform", "translate(" + (width + padding.left + padding.right) + "," + ((height / 2) + padding.top) + ")")
+            .attr("transform", `translate(${((width / 2) + padding.left)}, 0)`)
             .append("path")
-            .attr("d", "M-" + (radius * .15) + ",0L0," + (radius * .05) + "L0,-" + (radius * .05) + "Z")
+            .attr("d", `M-${(radius * 0.05)}, 0L0, ${(radius * 0.15)}L${(radius * 0.05)}, 0Z`)
             .style({ "fill": "red" });
 
         $container.append("circle")
@@ -172,7 +172,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
 
                 let pieSlice = 360 / items.length;
-                let rotation = (360 - (pieSlice * pickedIndex) + Variable.rnd(35, 85)) + (Variable.rnd(6, 14) * 360);
+                let maxPieSliceDegree = 0;
+                let minPieSliceDegree = pieSlice * -1;
+                let rotation = ((Variable.rnd(6, 14) * 360) - (pieSlice * pickedIndex) + Variable.rnd((minPieSliceDegree + (pieSlice / 10) ), (maxPieSliceDegree - (pieSlice / 10))));
 
                 $vis.transition()
                     .duration(8000)

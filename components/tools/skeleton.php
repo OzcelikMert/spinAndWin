@@ -11,11 +11,12 @@
 </head>
 
 <body>
+    <div class="bg-mask"></div>
     <div id="page">
         <?php
-        require "components/tools/preloader.php";
+            require "components/tools/preloader.php";
+            require "components/tools/header.php";
         ?>
-
         <div class="container">
             <div class="page-content mt-3">
                 <div class="min-vh-100">

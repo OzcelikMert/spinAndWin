@@ -1,0 +1,27 @@
+body {
+    position: relative;
+    font-family: Arial, sans-serif;
+    background-color: aliceblue;
+}
+
+.bg-mask {
+    position: absolute;
+    z-index: -1;
+}
+
+a {
+    text-decoration: none;
+}
+
+.social-media img {
+    width: 150px;
+}
+
+.social-media a {
+    color: red;
+    font-size: 25px;
+}
+
+.social-media a:hover {
+    color: darkred;
+}
