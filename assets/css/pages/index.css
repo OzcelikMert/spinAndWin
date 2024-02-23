@@ -20,6 +20,24 @@ text{
     left:0;
 }
 
+#chart svg {
+    overflow: visible;
+}
+
+.slice {
+    position: relative;
+}
+
+.slice .sliceImage {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    background-size: cover;
+    background-position: center center;
+    background-repeat: no-repeat;
+    background-image: var(--sliceImage);
+}
+
 #winnerText h1{
     font-size: 45px;
     padding-left: 15px;

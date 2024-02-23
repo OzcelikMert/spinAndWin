@@ -1,0 +1,9 @@
+#myTable .item-image {
+    height: 60px;
+    width: 60px;
+}
+
+#editModal .item-image {
+    height: 125px;
+    width: 250px;
+}

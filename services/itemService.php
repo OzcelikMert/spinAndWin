@@ -7,16 +7,27 @@ use utils\ItemUtil;
 use myLibrary\php\operations\Variable;
 
 class ItemService {
-    public static function get() {
-        return ItemUtil::readJsonFile();
+    public static function get($id = "") {
+        $rows = ItemUtil::readJsonFile();
+
+        if(!Variable::isEmpty($id)){
+            foreach($rows as &$row) {
+                if($row[DataKeys::columnId] == $id) {
+                    return $row;
+                }
+            }
+        }
+
+        return $rows;
     }
 
-    public static function add($text, $probability, $qty) {
+    public static function add($text, $image, $probability, $qty) {
         $rows = ItemUtil::readJsonFile();
 
         $results = [
             DataKeys::columnId => uniqid(),
             DataKeys::columnText => $text,
+            DataKeys::columnImage => $image,
             DataKeys::columnProbability => $probability,
             DataKeys::columnQty => $qty,
         ];
@@ -28,11 +39,12 @@ class ItemService {
         return $results;
     }
 
-    public static function update($id, $text, $probability, $qty) {
+    public static function update($id, $text, $image, $probability, $qty) {
         $rows = ItemUtil::readJsonFile();
 
         $results = [
             DataKeys::columnText => $text,
+            DataKeys::columnImage => $image,
             DataKeys::columnProbability => $probability,
             DataKeys::columnQty => $qty,
         ];

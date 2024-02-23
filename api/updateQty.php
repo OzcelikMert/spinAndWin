@@ -13,6 +13,7 @@ use services\ItemService;
 $echo = new Result();
 
 if ($_POST) {
+    Variable::clearAllData($_POST);
     $itemId = User::post(DataKeys::columnId);
     $qty = trim(User::post(DataKeys::columnQty));
 

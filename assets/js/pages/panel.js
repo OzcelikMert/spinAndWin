@@ -1,4 +1,8 @@
 $(function () {
+    let $formAdd = document.querySelector("form#addForm");
+    let $formEdit = document.querySelector("form#editForm");
+    let $buttonExport = document.querySelector("button.exportButton");
+    let $imageEditModal = document.querySelector("#editModal img");
     let $table = null;
     let rows = [];
     let rowId = "";
@@ -10,6 +14,14 @@ $(function () {
 
         function getUpdateButtonElement(row) {
             return `<button class="btn btn-warning editButton" row-id="${row.itemId}">Güncelle</button>`
+        }
+
+        function getImageElement(row) {
+            return `<img class="item-image" alt="${row.itemText}" src="./uploads/${row.itemImage}" />`
+        }
+
+        function getImageEmptyElement(row) {
+            return `<img class="item-image" alt="${row.itemText}" src="./assets/images/empty.jpg" />`
         }
 
         if(showLoader){
@@ -36,6 +48,7 @@ $(function () {
                             data: rows,
                             columns: [
                                 { data: "itemId", orderable: true },
+                                { data: "itemImage", orderable: false, render: function (data, type, row) { return row.itemImage ? getImageElement(row) : getImageEmptyElement(row) } },
                                 { data: "itemText", orderable: true},
                                 { data: "itemProbability", orderable: true},
                                 { data: "itemQty", orderable: true},
@@ -65,7 +78,7 @@ $(function () {
         })
     }
 
-    $("#addForm").on("submit", function (e) {
+    $formAdd.addEventListener("submit", function (e) {
         e.preventDefault();
 
         let data = $(this).serializeObject();
@@ -89,20 +102,20 @@ $(function () {
             "duration": 0
         });
 
+        const formData = new FormData(e.target);
+
         $.ajax({
             url: "api/add.php",
             type: "POST",
-            data: data,
+            cache: false,
+            contentType: false,
+            processData: false,
+            data: formData,
             success: (res) => {
                 $.Toast.hideToast();
                 var json = JSON.parse(res);
                 if (json.status) {
-
-                    let $form = $("#addForm");
-
-                    $form.find("input[name='itemText']").val("");
-                    $form.find("input[name='itemProbability']").val(0);
-                    $form.find("input[name='itemQty']").val(1);
+                    e.target.reset();
 
                     initTable();
 
@@ -124,9 +137,72 @@ $(function () {
                 })
             }
         })
-    })
+    });
 
-    $(document).on("click", ".deleteButton", async function (e) {
+    $formEdit.addEventListener("submit", function (e) {
+        e.preventDefault();
+
+        let data = $(this).serializeObject();
+
+        if (
+            Variable.isEmpty(data.itemText) ||
+            Variable.isEmpty(data.itemProbability) ||
+            Variable.isEmpty(data.itemQty)
+        ) {
+            Swal.fire({
+                icon: 'error',
+                title: 'Boş yer bırakma!',
+                text: `Lütfen boş yer bırakmayınız.`,
+            });
+            return false;
+        }
+
+        $.Toast.showToast({
+            "title": "Güncelleniyor...",
+            "icon": "loading",
+            "duration": 0
+        });
+
+        const formData = new FormData(e.target);
+        formData.append("itemId", rowId);
+
+        $.ajax({
+            url: "api/update.php",
+            type: "POST",
+            cache: false,
+            contentType: false,
+            processData: false,
+            data: formData,
+            success: (res) => {
+                $.Toast.hideToast();
+                var json = JSON.parse(res);
+                if (json.status) {
+                    e.target.reset();
+                    initTable();
+
+                    $('#editModal').modal("hide");
+
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Güncellendi!',
+                        text: `'${data.itemText}' başarıyla güncellendi.`,
+                    });
+                } else {
+                    Api.showErrorMessage(json.error_code)
+                }
+            },
+            error: () => {
+                $.Toast.hideToast();
+                Swal.fire({
+                    icon: 'error',
+                    title: "Server Error!",
+                    text: 'Please you should contact to admin.'
+                })
+            }
+        })
+    });
+
+    $(document).on("click", "button.deleteButton", async function (e) {
         let row = ArrayList.find(rows, $(this).attr("row-id"), "itemId");
 
         let swal = await Swal.fire({
@@ -172,7 +248,7 @@ $(function () {
         }
     });
 
-    $(document).on("click", ".editButton", function (e) {
+    $(document).on("click", "button.editButton", function (e) {
         let row = ArrayList.find(rows, $(this).attr("row-id"), "itemId");
 
         let $form = $("#editForm");
@@ -180,70 +256,15 @@ $(function () {
         $form.find("input[name='itemText']").val(row.itemText);
         $form.find("input[name='itemProbability']").val(row.itemProbability);
         $form.find("input[name='itemQty']").val(row.itemQty);
+        $imageEditModal.src = row.itemImage ? `./uploads/${row.itemImage}` : "./assets/images/empty.jpg";
+        $imageEditModal.alt = row.itemName;
 
         rowId = row.itemId;
 
         $("#editModal").modal("toggle");
     });
 
-    $(document).on("submit", "#editForm", function (e) {
-        e.preventDefault();
-
-        let data = $(this).serializeObject();
-
-        if (
-            Variable.isEmpty(data.itemText) ||
-            Variable.isEmpty(data.itemProbability) ||
-            Variable.isEmpty(data.itemQty)
-        ) {
-            Swal.fire({
-                icon: 'error',
-                title: 'Boş yer bırakma!',
-                text: `Lütfen boş yer bırakmayınız.`,
-            });
-            return false;
-        }
-
-        $.Toast.showToast({
-            "title": "Güncelleniyor...",
-            "icon": "loading",
-            "duration": 0
-        });
-
-        $.ajax({
-            url: "api/update.php",
-            type: "POST",
-            data: { itemId: rowId, ...data },
-            success: (res) => {
-                $.Toast.hideToast();
-
-                var json = JSON.parse(res);
-                if (json.status) {
-                    initTable();
-
-                    $('#editModal').modal("hide");
-
-                    Swal.fire({
-                        icon: 'success',
-                        title: 'Güncellendi!',
-                        text: `'${data.itemText}' başarıyla güncellendi.`,
-                    });
-                } else {
-                    Api.showErrorMessage(json.error_code)
-                }
-            },
-            error: () => {
-                $.Toast.hideToast();
-                Swal.fire({
-                    icon: 'error',
-                    title: "Server Error!",
-                    text: 'Please you should contact to admin.'
-                })
-            }
-        })
-    });
-
-    $(document).on("click", ".exportButton", async function (e) {
+    $buttonExport.addEventListener("click", async function (e) {
         function exportJson() {
             const today = new Date();
             const year = today.getFullYear();

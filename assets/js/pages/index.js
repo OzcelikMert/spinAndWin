@@ -10,6 +10,8 @@ document.addEventListener('DOMContentLoaded', () => {
         $winnerText = document.querySelector("#winnerText h1"),
         $chart = document.querySelector("#chart");
 
+    const colors = { pieTextLight: "#fff", pieTextDark: "#000", pieBGDark: "rgba(0, 0, 0, 0.8)", pieBG: "rgba(0, 0, 0, 0.4)", wheelPieSelectorBG: "red", wheelSpinButtonBG: "white" }
+
     function getItems() {
         $.Toast.showToast({
             "title": "Yükleniyor...",
@@ -57,7 +59,7 @@ document.addEventListener('DOMContentLoaded', () => {
             $.ajax({
                 url: "api/updateQty.php",
                 type: "POST",
-                data: { itemId: itemId, itemQty: itemQty},
+                data: { itemId: itemId, itemQty: itemQty },
                 success: (res) => {
                     resolve(1);
                 },
@@ -96,18 +98,40 @@ document.addEventListener('DOMContentLoaded', () => {
             .data($pie)
             .enter()
             .append("g")
-            .attr("class", "slice");
-
-        $arcs.append("path")
-            .attr("fill", function (d, i) { return items[i].itemQty <= 0 ? "#444" : getRandomColor(); })
-            .attr("d", function (d) { return $arc(d); });
-
-        $arcs.append("text")
-            .attr("fill", function (d, i) { return items[i].itemQty <= 0 ? "#fff" : "#000"; })
-            .attr("transform", function (d) {
+            .attr("id", (d, i) => {
                 d.innerRadius = 0;
                 d.outerRadius = radius;
                 d.angle = (d.startAngle + d.endAngle) / 2;
+                return `slice-${i + 1}`;
+            })
+            .attr("class", "slice");
+
+        $arcs.append("defs")
+            .append("pattern")
+            .attr("id", function (d, i) { return `sliceImage-${i}`; })
+            .attr("patternContentUnits", "objectBoundingBox")
+            .attr("width", "100%")
+            .attr("height", "100%")
+            .append("image")
+            .attr("xlink:href", function (d, i) { return items[i].itemImage ? `./uploads/${items[i].itemImage}` : "./assets/images/empty.jpg"; })
+            .attr("preserveAspectRatio", "xMidYMid slice")
+            .attr("width", "1")
+            .attr("height", "1");
+
+        $arcs.append("path")
+            .attr("fill", function (d, i) { return `url(#sliceImage-${i})` })
+            .attr("d", function (d) { return $arc(d); });
+
+        $arcs.append("path")
+            .attr("class", "sliceBG")
+            .attr("fill", function (d, i) { return items[i].itemQty <= 0 ? colors.pieBGDark : colors.pieBG; })
+            .attr("stroke", function (d, i) { return colors.pieTextDark; })
+            .attr("d", function (d) { return $arc(d); });
+
+
+        $arcs.append("text")
+            .attr("fill", function (d, i) { return colors.pieTextLight; })
+            .attr("transform", function (d, i) {
                 return "rotate(" + (d.angle * 180 / Math.PI - 90) + ")translate(" + (d.outerRadius - 10) + ")";
             })
             .attr("text-anchor", "end")
@@ -115,18 +139,17 @@ document.addEventListener('DOMContentLoaded', () => {
                 return data[i].label;
             });
 
-
         $svg.append("g")
             .attr("transform", `translate(${((width / 2) + padding.left)}, 0)`)
             .append("path")
             .attr("d", `M-${(radius * 0.05)}, 0L0, ${(radius * 0.15)}L${(radius * 0.05)}, 0Z`)
-            .style({ "fill": "red" });
+            .style({ "fill": colors.wheelPieSelectorBG });
 
         $container.append("circle")
             .attr("cx", 0)
             .attr("cy", 0)
             .attr("r", 60)
-            .style({ "fill": "white", "cursor": "pointer" })
+            .style({ "fill": colors.wheelSpinButtonBG, "cursor": "pointer" })
             .on("click", spin);
 
         $container.append("text")
@@ -174,10 +197,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 let pieSlice = 360 / items.length;
                 let maxPieSliceDegree = 0;
                 let minPieSliceDegree = pieSlice * -1;
-                let rotation = ((Variable.rnd(6, 14) * 360) - (pieSlice * pickedIndex) + Variable.rnd((minPieSliceDegree + (pieSlice / 10) ), (maxPieSliceDegree - (pieSlice / 10))));
+                let rotation = ((Variable.rnd(6, 14) * 360) - (pieSlice * pickedIndex) + Variable.rnd((minPieSliceDegree + (pieSlice / 10)), (maxPieSliceDegree - (pieSlice / 10))));
 
                 $vis.transition()
-                    .duration(8000)
+                    .duration(Variable.rnd(6, 12) * 1000)
                     .attrTween("transform", function () {
                         let i = d3.interpolate(oldRotation % 360, rotation);
                         return function (t) {
@@ -185,22 +208,22 @@ document.addEventListener('DOMContentLoaded', () => {
                         };
                     })
                     .each("end", async function () {
-                        if(pickedItemQty <= 0){
-                            d3.select(`.slice:nth-child(${(pickedIndex + 1)}) path`)
-                            .attr("fill", "#444");
+                        if (pickedItemQty <= 0) {
+                            d3.select(`#slice-${pickedIndex + 1} path.sliceBG`)
+                                .attr("fill", colors.pieBGDark);
 
-                            d3.select(`.slice:nth-child(${(pickedIndex + 1)}) text`)
-                                .attr("fill", "#fff");
+                            d3.select(`#slice-${pickedIndex + 1} text`)
+                                .attr("fill", colors.pieTextLight);
                         }
 
-                        if(winnerClass == "win"){
+                        if (winnerClass == "win") {
                             await updateItemQty(pickedItemId, pickedItemQty);
                             items[pickedIndex].itemQty = pickedItemQty;
                             toggleConfetti("🌟");
-                            d3.select(`.slice:nth-child(${(pickedIndex + 1)}) text`)
+                            d3.select(`#slice-${pickedIndex + 1} text`)
                                 .text(`${items[pickedIndex].itemText} (${items[pickedIndex].itemQty} Adet)`);;
                         }
-                        
+
                         $winnerText.classList.remove("win", "lose");
                         $winnerText.classList.add(winnerClass)
                         $winnerText.innerHTML = winnerMessage;
@@ -217,30 +240,18 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    const getRandomColor = () => {
-        const letters = 'ABCDEF';
-        let color = '#';
-    
+    const getRandomColor = (opacity = "0.5") => {
+        let color = 'rgba(';
+
         // Rastgele bir açık renk oluştur
         for (let i = 0; i < 3; i++) {
-            color += letters[Math.floor(Math.random() * 6)];
+            color += Variable.rnd(20, 255); // 20-255 arası rastgele sayılar oluşturur
+            if (i < 2) color += ', '; // Son bileşen hariç her bir bileşenin sonuna virgül ekler
         }
-    
-        // Yazı rengi için kontrast kontrolü
-        // R: 16, G: 16, B: 16'nın altına inmemeli
-        if (parseInt(color.substring(1, 3), 16) < 16 &&
-            parseInt(color.substring(3, 5), 16) < 16 &&
-            parseInt(color.substring(5, 7), 16) < 16) {
-            // Renkleri artır
-            color = '#' + (
-                parseInt(color.substring(1, 3), 16) + 32
-            ).toString(16).padStart(2, '0') + (
-                parseInt(color.substring(3, 5), 16) + 32
-            ).toString(16).padStart(2, '0') + (
-                parseInt(color.substring(5, 7), 16) + 32
-            ).toString(16).padStart(2, '0');
-        }
-    
+
+        // Alfa (şeffaflık) bileşeni ekler
+        color += `, ${opacity})`; // Opacity değeri 0.6 olarak belirlenir
+
         return color;
     };
 

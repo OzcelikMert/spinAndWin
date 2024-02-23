@@ -4,6 +4,9 @@
             <div class="modal-header">
                 <h5 class="modal-title" id="exampleModalLongTitle">Güncelleme Ekranı</h5>
             </div>
+            <div class="justify-content-center text-center p-3">
+                <img class="item-image" src="./assets/images/empty.jpg" alt="empty image">
+            </div>
             <?php 
                 $formId = "editForm";
                 include "components/pages/panel/add.php"; 

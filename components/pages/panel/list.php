@@ -7,6 +7,7 @@
             <thead>
                 <tr>
                     <th>ID</th>
+                    <th>Resim</th>
                     <th>İsim</th>
                     <th>Olasılık</th>
                     <th>Stok Miktarı</th>
