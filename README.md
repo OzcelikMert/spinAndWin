@@ -1,2 +1,2 @@
-# myLanguageAppAddWordDesktop
-My Language App Desktop For Add Word
+# spinAndWin
+spin and win
